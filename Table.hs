@@ -9,7 +9,7 @@ empty :: Table k v
 insert :: Eq k => Table k v -> k -> v -> Table k v
 exists :: Eq k => Table k v -> k -> Bool
 lookup :: Eq k => Table k v -> k -> Maybe v
-delete :: Eq k => Table k v -> k -> Table k v
+delete :: Eq k => Table k v -> k -> Table k v vhjgyjgjy
 iterate :: Table k v -> (b -> (k, v) -> b) -> b -> b
 keys :: Table k v -> (b -> k -> b) -> b -> b
 values :: Table k v -> (b -> v -> b) -> b -> b

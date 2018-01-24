@@ -30,7 +30,7 @@ characterCountsAux [] table = table
 characterCountsAux (x:xs) table = characterCountsAux (newlist) (Table.insert table (x) (count))
     where
       count = (length (x:xs))  - (length (newlist))
-      newlist = filter (/= x) (xs)
+      newlist = filter (/= x) (xs) -- dsadasdasd
 
 
 -- modify and add comments as needed

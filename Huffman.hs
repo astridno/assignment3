@@ -23,7 +23,14 @@ type BitCode = [Bool]
    EXAMPLES:
  -}
 characterCounts :: String -> Table Char Int
-characterCounts s = undefined
+characterCounts s = characterCountsAux s (Table.empty)
+
+characterCountsAux :: String -> Table Char Int -> Table Char Int
+characterCountsAux [] table = table
+characterCountsAux (x:xs) table = characterCountsAux (newlist) (Table.insert table (x) (count))
+    where
+      count = (length (x:xs))  - (length (newlist))
+      newlist = filter (/= x) (xs)
 
 
 -- modify and add comments as needed

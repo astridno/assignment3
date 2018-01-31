@@ -24,51 +24,92 @@ type BitCode = [Bool]
  -}
 characterCounts :: String -> Table Char Int
 characterCounts s = characterCountsAux s (Table.empty)
-
-characterCountsAux :: String -> Table Char Int -> Table Char Int
-characterCountsAux [] table = table
-characterCountsAux (x:xs) table = characterCountsAux (newlist) (Table.insert table (x) (count))
-    where
-      count = (length (x:xs))  - (length (newlist))
-      newlist = filter (/= x) (xs) -- dsadasdasd
+  where
+    characterCountsAux :: String -> Table Char Int -> Table Char Int
+    characterCountsAux [] table = table
+    characterCountsAux (x:xs) table = characterCountsAux (newlist) (Table.insert table (x) (count)) --
+        where
+          newlist = filter (/= x) (xs) -- removes all letters x from xs
+          count = (length (x:xs))  - (length (newlist)) -- compares length of xs with newlist
 
 
 -- modify and add comments as needed
-data HuffmanTree = HuffmanTree ()
-
+data HuffmanTree = Leaf Char Int | Node Int (HuffmanTree) (HuffmanTree) deriving (Show, Read, Eq, Ord)
 
 {- huffmanTree t
    PRE:  t maps each key to a positive value
    RETURNS: a Huffman tree based on the character counts in t
    EXAMPLES:
  -}
+
 huffmanTree :: Table Char Int -> HuffmanTree
-huffmanTree t = undefined
+huffmanTree t = fst $ fst (PriorityQueue.least (huffStep (huffTreeAux t)))
+  where
+    huffTreeAux :: Table Char Int -> PriorityQueue HuffmanTree
+    huffTreeAux table = Table.iterate table huffTrance PriorityQueue.empty
+      where
+        huffTrance :: PriorityQueue HuffmanTree -> (Char, Int) ->  PriorityQueue HuffmanTree
+        huffTrance pq (a, b) = PriorityQueue.insert pq ((Leaf a b), b)
 
-
+    huffStep :: PriorityQueue HuffmanTree -> PriorityQueue HuffmanTree
+    huffStep pq
+      | is_empty pq1 = pq
+      | otherwise = huffStep (PriorityQueue.insert pq2 (Node (newPrio) (t1) (t2), newPrio))
+       where
+         ((t1, prio1), pq1) = least pq
+         ((t2, prio2), pq2) = least pq1
+         newPrio = prio1 + prio2
 {- codeTable h
-   RETURNS: a table that maps each character in h to its Huffman code
-   EXAMPLES:
- -}
+ RETURNS: a table that maps each character in h to its Huffman code
+ EXAMPLES:
+-}
 codeTable :: HuffmanTree -> Table Char BitCode
-codeTable h = undefined
-
+codeTable h = codeTableAux h Table.empty []
+ where
+  codeTableAux :: HuffmanTree -> Table Char BitCode -> BitCode -> Table Char BitCode
+  codeTableAux (Leaf char int) bctable bc = Table.insert bctable char bc
+  codeTableAux (Node int h1 h2) bctable bc = codeTableAux h1 (codeTableAux h2 bctable (bc ++ [True])) (bc ++ [False])
 
 {- compress s
    RETURNS: (a Huffman tree based on s, the Huffman coding of s under this tree)
    EXAMPLES:
  -}
 compress :: String -> (HuffmanTree, BitCode)
-compress s = undefined
+compress s = (huffTree, bitCode s)
+  where
+    huffTree = huffmanTree (characterCounts s)
+    table = codeTable huffTree
+    bitCode [] = []
+    bitCode (x:xs) = let (Just bits) = (Table.lookup table x) in bits ++ (bitCode xs)
+
+{- 1. characterCounts
+characterCounts
+ 2. huffTree
+ 3. codeTable
+ 4. go through string and add bitCode
+ 5. return HuffTree and bitcode  -}
+
+
 
 
 {- decompress h bits
+
    PRE:  bits is a concatenation of valid Huffman code words for h
    RETURNS: the decoding of bits under h
    EXAMPLES:
  -}
 decompress :: HuffmanTree -> BitCode -> String
-decompress h bits = undefined
+decompress h [] = []
+decompress h bits = letter:(decompress h remainingBits)
+    where
+      (letter, remainingBits) = decompressAcc h bits
+
+decompressAcc :: HuffmanTree -> BitCode -> (Char, BitCode)
+decompressAcc (Node n (falset) (truet)) (x:xs)
+  | x == False = decompressAcc falset xs
+  | otherwise = decompressAcc truet xs
+decompressAcc (Leaf char _) bits = (char, bits)
+
 
 
 --------------------------------------------------------------------------------
